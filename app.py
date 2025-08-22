@@ -1,74 +1,98 @@
-class Gym:
+from collections import Counter
+
+class Gym_equipment:
     def __init__(self):
-        self.plates = []
-        self.barbells = []
+        self.plates = Counter()
+        self.barbells = Counter()
 
-    def add_equipment(self, equipment:list):
-        for item in equipment:
-            if isinstance(item, Plate):
-                print(f'Adding Plate: {item.weight} lbs')
-                self.plates.append(item)
+    def add_barbells(self, weight:int|float, quantity:int):
+        """Adds a specified quantity of barbells of a certain weight."""
+        if quantity > 0:
+            self.barbells[weight] += quantity
+            print(f"Added {quantity}, {weight} barbell(s).")
+        else:
+            print("Quantity to add must be positive.")
 
-            elif isinstance(item, Barbell):
-                print(f'Adding Barbell: {item.weight} lbs')
-                self.barbells.append(item)
+    def remove_barbells(self, weight:int|float, quantity:int):
+        """Removes a specified quantity of barbells of a certain weight."""
+        if quantity > 0:
+            if self.barbells[weight] >= quantity:
+                self.barbells[weight] -= quantity
+                print(f"Removed {quantity}, {weight} barbell(s).")
             else:
-                raise TypeError(f"Cannot add equipment of unknown type {type(item)}")
-            
-    def remove_equipment(self, equipment:list):
-        for item in equipment:
-            if isinstance(item, Plate):
-                print(f'Removing Plate: {item.weight} lbs')
-                copy_plates = self.plates[:]
-                i = 0
-                while i < len(copy_plates):
-                    if isinstance(copy_plates[i], Plate):
-                        if copy_plates[i].weight == item.weight:
-                            print(f"removing {i=}")
-                            copy_plates.pop(i)
+                print(f"Not enough {weight} barbells to remove.")
+        else:
+            print("Quantity to remove must be positive.")
 
-                            self.plates = copy_plates[:]
-                            break
-                        i += 1
+    def add_plates(self, weight:int|float, quantity:int):
+        """Adds a specified quantity of plates of a certain weight."""
+        if quantity > 0:
+            self.plates[weight] += quantity
+            print(f"Added {quantity}, {weight} plate(s).")
+        else:
+            print("Quantity to add must be positive.")
 
-            elif isinstance(item, Barbell):
-                print(f'Removing Barbell: {item.weight} lbs')
-                copy_barbell = self.barbells[:]
-                i = 0
-                while i < len(copy_barbell):
-                    if isinstance(copy_barbell[i], Barbell):
-                        if copy_barbell[i].weight == item.weight:
-                            copy_barbell.pop(i)
-                            self.barbells = copy_barbell[:]
-                            break
-                        i += 1
+    def remove_plates(self, weight:int|float, quantity:int):
+        """Removes a specified quantity of plates of a certain weight."""
+        if quantity > 0:
+            if self.plates[weight] >= quantity:
+                self.plates[weight] -= quantity
+                print(f"Removed {quantity}, {weight} plate(s).")
             else:
-                raise TypeError(f"Cannot remove equipment of unknown type {type(item)}")
+                print(f"Not enough {weight} plates to remove.")
+        else:
+            print("Quantity to remove must be positive.")
+    def total_plate_weight(self):
+        return sum(weight * count for weight, count in self.plates.items())
 
-
-class Plate:
-    def __init__(self, weight:int):
-        self.weight = weight
     def __repr__(self):
-        return f'<Plate {self.weight} >'
+        return f"Gym_equipment(plates={dict(self.plates)}, barbells={dict(self.barbells)})"
 
-class Barbell:
-    def __init__(self, weight):
-        self.weight = weight
-    def __repr__(self):
-        return f'<Barbell {self.weight}>'
+def load_barbell(target: float, bar_weight: float, current: list[float|int], gym: Gym_equipment):
+    """
+    target: desired total weight (bar + plates)
+    bar_weight: empty barbell weight
+    current: list of plate weights already loaded on ONE SIDE
+    gym: Gym_equipment object
+    
+    Returns: list of plates to add (per side) in order, or None if impossible.
+    """
+    current_total = bar_weight + 2 * sum(current)
+    need = target - current_total
 
-# Test Usage
-gym = Gym()
-plate_45 = "Plate(45)"
+    if need < 0:
+        return None  # can't unload plates
+    if need == 0:
+        return []    # already at target
 
-gym.add_equipment([Plate(45), Plate(45), Plate(10), Plate(15)])
-gym.add_equipment([Barbell(45), Barbell(15)])
-print(gym.barbells, gym.plates)
-gym.remove_equipment([Plate(45), Barbell(15), Plate(45), Plate(15), Plate(10), Plate(10), Plate(15), Barbell(20), Barbell(45)])
-gym.add_equipment([Barbell(45), Plate(45)])
+    plan = []
+    # work in descending order
+    for w in sorted(gym.plates.keys(), reverse=True):
+        pair_weight = w * 2
+        while need >= pair_weight and gym.plates[w] >= 2:
+            plan.append(w)
+            need -= pair_weight
+            gym.plates[w] -= 2  # use up a pair
+        if need == 0:
+            return plan
 
-print(gym.barbells, gym.plates)
+    return None  # not possible
 
+# Example usage:
+gym = Gym_equipment()
+# Add plates to inventory
+for wt, qty in [(45, 4), (35, 2), (25, 2), (15, 2), (10, 2), (5, 2), (2.5, 2)]:
+    gym.add_plates(wt, qty)
 
-print(Barbell(45))
+print("Inventory:", gym)
+
+bar_weight = 45
+current = [45, 15]  # one 45 per side already on bar (so total=95)
+
+target = 185
+plan = load_barbell(target, bar_weight, current, gym)
+
+if plan:
+    print(f"To reach {target} lbs, add (per side): {plan}")
+else:
+    print("Target not achievable with available plates, or no changes needed.")
