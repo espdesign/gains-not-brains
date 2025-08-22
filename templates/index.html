@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Barbell Plate Planner</title>
+</head>
+<body>
+    <h1>Barbell Plate Planner</h1>
+    <h2>Gym Inventory</h2>
+    <ul>
+        {% for plate, count in plates.items() %}
+            <li>{{ plate }} lbs: {{ count }} available</li>
+        {% endfor %}
+    </ul>
+
+    <h2>Plan a Lift</h2>
+    <form method="POST">
+        <label>Bar Weight (lbs):
+            <input type="text" name="bar_weight" value="{{ bar_weight }}">
+        </label><br><br>
+
+        <label>Current Load (per side, comma-separated):
+            <input type="text" name="current_load" value="{{ current_load | join(',') }}">
+        </label><br><br>
+
+        <label>Target Weight (lbs):
+            <input type="text" name="target_weight" value="{{ target_weight }}">
+        </label><br><br>
+
+        <input type="submit" value="Calculate">
+    </form>
+
+    {% if result %}
+        <h2>Result:</h2>
+        {% if result.error %}
+            <p style="color:red;">Error: {{ result.error }}</p>
+        {% else %}
+            <pre>{{ result }}</pre>
+        {% endif %}
+    {% endif %}
+</body>
+</html>
