@@ -48,51 +48,87 @@ class Gym_equipment:
     def __repr__(self):
         return f"Gym_equipment(plates={dict(self.plates)}, barbells={dict(self.barbells)})"
 
-def load_barbell(target: float, bar_weight: float, current: list[float|int], gym: Gym_equipment):
+def load_barbell(target: float, bar_weight: float, current: list[float]|list[int], gym: Gym_equipment):
     """
-    target: desired total weight (bar + plates)
-    bar_weight: empty barbell weight
-    current: list of plate weights already loaded on ONE SIDE
-    gym: Gym_equipment object
+    Add plates until the target is reached (no removals).
     
-    Returns: list of plates to add (per side) in order, or None if impossible.
+    Returns:
+        {"add": [plates to add per side],
+         "new_state": [final plates per side]}
+    or None if impossible.
     """
     current_total = bar_weight + 2 * sum(current)
     need = target - current_total
 
     if need < 0:
-        return None  # can't unload plates
+        return None  # can't unload here
     if need == 0:
-        return []    # already at target
+        return {"add": [], "new_state": current[:]}
 
-    plan = []
-    # work in descending order
+    plan_add = []
+    new_state = current[:]
+
     for w in sorted(gym.plates.keys(), reverse=True):
         pair_weight = w * 2
         while need >= pair_weight and gym.plates[w] >= 2:
-            plan.append(w)
+            plan_add.append(w)
+            new_state.append(w)
             need -= pair_weight
-            gym.plates[w] -= 2  # use up a pair
+            gym.plates[w] -= 2
         if need == 0:
-            return plan
+            return {"add": plan_add, "new_state": new_state}
 
     return None  # not possible
 
+
+def unload_barbell(target: float, bar_weight: float, current: list[float]|list[int]):
+    """
+    Remove plates until the target is reached.
+    
+    Returns:
+        {"remove": [plates removed per side],
+         "new_state": [final plates per side]}
+    or None if impossible.
+    """
+    current_total = bar_weight + 2 * sum(current)
+    diff = current_total - target
+
+    if diff < 0:
+        return None  # can't unload to go heavier
+    if diff == 0:
+        return {"remove": [], "new_state": current[:]}
+
+    plan_remove = []
+    new_state = current[:]
+
+    # Work outermost first (heaviest first is a safe approximation)
+    for w in sorted(current, reverse=True):
+        pair_weight = w * 2
+        if diff >= pair_weight and w in new_state:
+            plan_remove.append(w)
+            new_state.remove(w)
+            diff -= pair_weight
+        if diff == 0:
+            return {"remove": plan_remove, "new_state": new_state}
+
+    return None  # couldn't reach target exactly
+
+
 # Example usage:
 gym = Gym_equipment()
-# Add plates to inventory
-for wt, qty in [(45, 4), (35, 2), (25, 2), (15, 2), (10, 2), (5, 2), (2.5, 2)]:
+for wt, qty in [(45, 6), (35, 2), (25, 2), (10, 2), (5, 2), (2.5, 2)]:
     gym.add_plates(wt, qty)
 
-print("Inventory:", gym)
-
 bar_weight = 45
-current = [45, 15]  # one 45 per side already on bar (so total=95)
+current = [25]  # per side → total = 95
 
-target = 185
-plan = load_barbell(target, bar_weight, current, gym)
+print("Current total:", bar_weight + 2*sum(current))
 
-if plan:
-    print(f"To reach {target} lbs, add (per side): {plan}")
-else:
-    print("Target not achievable with available plates, or no changes needed.")
+# Case 1: load up to 200
+plan = load_barbell(200, bar_weight, current[:], gym)
+print("Load plan:", plan)
+
+# Case 2: unload down to 135 (from [45,25,10] per side = 205)
+current2 = [45, 25, 10]
+plan2 = unload_barbell(135, bar_weight, current2)
+print("Unload plan:", plan2)
