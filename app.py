@@ -10,10 +10,18 @@ barbell = Barbell(45)
 
 def attempt_weight_change(barbell, gym, target_weight):
     try:
-        print("Current:", barbell, gym)
+        print("Current:", barbell, gym,)
+        print("Target:", target_weight)
         while not gym.change_weight(barbell, target_weight):
+            #print(gym.last_move)
+            gym.plan.append(gym.last_move)
+            gym.last_move = []
             pass
+        #print(gym.last_move)
+        gym.plan.append(gym.last_move)
         print("After:", barbell, gym)
+        print('PLAN:', gym.plan)
+        
     except ValueError as e:
         print(e)
 
@@ -21,4 +29,7 @@ def attempt_weight_change(barbell, gym, target_weight):
 # Example usage
 for target in [135, 165, 185, 225, 215, 135]:
     attempt_weight_change(barbell, gym, target)
+    gym.last_move = []
+    gym.plan = []
+    print('\n')
 

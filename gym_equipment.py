@@ -37,10 +37,12 @@ class Barbell:
     def current_load(self):
         return self.weight + sum(self.cur_plate_order)*2
             
-        
+
 class Gym_equipment:
     def __init__(self):
         self.plates: Counter[PlateNumber] = Counter()
+        self.last_move = []
+        self.plan = []
 
     def add_plates(self, plate_type: PlateNumber, quantity: int):
         if quantity > 0:
@@ -71,41 +73,47 @@ class Gym_equipment:
                 barbell.add_plate(diff_half)
                 self.plates.subtract(Counter({diff_half:2}))
                 self.plates = self.plates + Counter() # remove plates that are at 0
+                self.last_move = [('ADD',[diff_half])]
                 return True
             else:
                 # we must look for combinations of available plates that we can add to get to the total weight
                 plan = sorted(find_plate_combo_symmetric(self.plates, diff_half),reverse=True)
-                print(plan)
+                #print(plan)
                 if plan:
-                    print("Solution Found")
+                    #print("Solution Found")
                     for plate in plan:
                         barbell.add_plate(plate)
                         self.plates.subtract(Counter({plate:2}))
                         self.plates = self.plates + Counter() # remove plates that are at 0
+                        self.last_move.append(('ADD',[plate]))
                         
                     return True
                 else:
-                    print("Solution not found")
+                    #print("Solution not found")
                     #remove outer plates and return false
-                    print(barbell.cur_plate_order)
+                    #print(barbell.cur_plate_order)
+                    x = barbell.cur_plate_order[-1] # make note of plate on end
                     self.plates = self.plates + Counter([barbell.cur_plate_order[-1]]*2)
                     if barbell.pop_plate():
-                        print("Removed outer plate, trying again")
-                        print(barbell)
+                        self.last_move = [('REMOVE',[x])] # add removed plate to last_move
+                        #print("Removed outer plate, trying again")
+                        #print(barbell)
                         return False
                     else:
                         raise ValueError("No more plates to remove, cannot reach target weight")
 
         elif diff_half < 0:
             #remove weights to reach target weight
-            print('Removing Plate to reach target weight')
+            #print('Removing Plate to reach target weight')
             # if the last weight added to our barbell is the target diffrence remove plate and return true
             if abs(diff_half) == barbell.cur_plate_order[-1]:
+                self.last_move = [('REMOVE',[barbell.cur_plate_order[-1]])] # add move to last move
                 self.plates = self.plates + Counter([barbell.cur_plate_order[-1]]*2) # add plate back to gym supply
                 barbell.pop_plate()
-                print('removed last added plate for simple solution')
+                #print('removed last added plate for simple solution')
                 return True
             else:
+                self.last_move = [('REMOVE',[barbell.cur_plate_order[-1]])] # add move to last move
                 self.plates = self.plates + Counter([barbell.cur_plate_order[-1]]*2) # add plate back to gym supply
                 barbell.pop_plate()
                 return False
