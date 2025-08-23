@@ -1,5 +1,6 @@
 from collections import Counter
 from typing import Union
+from itertools import combinations
 
 PlateNumber = Union[int, float]
 
@@ -17,7 +18,12 @@ class Barbell:
             return True
         else:
             return False
-
+    def pop_plate(self):
+        try:
+            self.cur_plate_order.pop(-1)
+            return True
+        except IndexError:
+            return False
     def remove_plate(self, plate:int|float):
         try:
             if self.cur_plate_order[-1] == plate:
@@ -27,6 +33,9 @@ class Barbell:
                 return False
         except IndexError:
             return False
+        
+    def current_load(self):
+        return self.weight + sum(self.cur_plate_order)*2
             
         
 class Gym_equipment:
@@ -38,7 +47,7 @@ class Gym_equipment:
             self.plates[plate_type] += quantity
         else:
             raise ValueError("Quantity to add must be positive.")
-
+        
     def remove_plates(self, plate_type: PlateNumber, quantity: int):
         if quantity > 0:
             if self.plates[plate_type] >= quantity:
@@ -50,7 +59,76 @@ class Gym_equipment:
 
     def total_plate_weight(self) -> PlateNumber:
         return sum(weight * count for weight, count in self.plates.items())
+    
+    def change_weight(self, barbell: 'Barbell', target: PlateNumber):
+        # calculate the diffrence of the current barbell weight and the target weight
+        diff_half = (target - barbell.current_load()) / 2 # the total weight we need to add to each side to reach target weight
+
+        if diff_half > 0:
+            #add weights to reach target weight
+            # first check for simple add solution
+            if diff_half in self.plates:
+                barbell.add_plate(diff_half)
+                self.plates.subtract(Counter({diff_half:2}))
+                self.plates = self.plates + Counter() # remove plates that are at 0
+                return True
+            else:
+                # we must look for combinations of available plates that we can add to get to the total weight
+                plan = sorted(find_plate_combo_symmetric(self.plates, diff_half),reverse=True)
+                print(plan)
+                if plan:
+                    print("Solution Found")
+                    for plate in plan:
+                        barbell.add_plate(plate)
+                        self.plates.subtract(Counter({plate:2}))
+                        self.plates = self.plates + Counter() # remove plates that are at 0
+                    return True
+                else:
+                    print("Solution not found")
+                    #remove outer plates and return false
+                    print(barbell.cur_plate_order)
+                    self.plates = self.plates + Counter([barbell.cur_plate_order[-1]]*2)
+                    if barbell.pop_plate():
+                        print("Removed outer plate, trying again")
+                        print(barbell)
+                        return False
+                    else:
+                        raise ValueError("No more plates to remove, cannot reach target weight")
+
+        elif diff_half < 0:
+            #remove weights to reach target weight
+            print('Removing Plate to reach target weight')
+            # if the last weight added to our barbell is the target diffrence remove plate and return true
+            if abs(diff_half) == barbell.cur_plate_order[-1]:
+                self.plates = self.plates + Counter([barbell.cur_plate_order[-1]]*2) # add plate back to gym supply
+                barbell.pop_plate()
+                print('removed last added plate for simple solution')
+                return True
+            else:
+                self.plates = self.plates + Counter([barbell.cur_plate_order[-1]]*2) # add plate back to gym supply
+                barbell.pop_plate()
+                return False
+        else:
+            raise ValueError('Already at target weight')
+
+        print(f"{diff_half=}")
+
+
+
 
     def __repr__(self) -> str:
         return f"Gym_equipment(plates={dict(self.plates)})"
+    
 
+
+def find_plate_combo_symmetric(plates, target): 
+    #brute force look through combinations of available plates to add.
+    print('Looking for symmetric_combo')
+    i=2
+    while True:
+        for item in list(combinations(plates,i)):
+            if sum(item) == target:
+                return list(item)
+        i += 1
+        if i > 50:
+            return list()

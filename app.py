@@ -5,16 +5,62 @@ gym = Gym_equipment()
 for wt, qty in [(45, 4), (35, 2), (25, 2), (15,2),(10, 2), (5, 2), (2.5, 2)]:
     gym.add_plates(wt, qty)
 print(gym, '\n')
-
 barbell = Barbell(45)
-print('adding Plate 45')
-barbell.add_plate(45)
-print(barbell)
-print('adding Plate 25')
-barbell.add_plate(25)
-print(barbell)
-print('Removing Plate 25')
-barbell.remove_plate(25)
-print(barbell)
-barbell.add_plate(2.5)
-print(barbell)
+
+
+# Example usage
+target_weight = 135
+try:
+    print("Current:", barbell, gym)
+    gym.change_weight(barbell, target_weight)
+    print("After:", barbell, gym)
+except ValueError as e:
+    print(e)
+
+# Example usage
+target_weight = 165
+try:
+    print("Current:", barbell, gym)
+    gym.change_weight(barbell, target_weight)
+    print("After:", barbell, gym)
+except ValueError as e:
+    print(e)
+
+# Example usage
+target_weight = 185
+try:
+    print("Current:", barbell, gym)
+    gym.change_weight(barbell, target_weight)
+    print("After:", barbell, gym)
+except ValueError as e:
+    print(e)
+# Example usage
+target_weight = 225
+try:
+    print("Current:", barbell, gym)
+    while True:
+        if gym.change_weight(barbell, target_weight):
+            break
+    print("After:", barbell, gym)
+except ValueError as e:
+    print(e)
+
+target_weight = 215
+try:
+    print("Current:", barbell, gym)
+    while True:
+        if gym.change_weight(barbell, target_weight):
+            break
+    print("After:", barbell, gym)
+except ValueError as e:
+    print(e)
+
+target_weight = 135
+try:
+    print("Current:", barbell, gym)
+    while True:
+        if gym.change_weight(barbell, target_weight):
+            break
+    print("After:", barbell, gym)
+except ValueError as e:
+    print(e)
