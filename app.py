@@ -8,59 +8,17 @@ print(gym, '\n')
 barbell = Barbell(45)
 
 
-# Example usage
-target_weight = 135
-try:
-    print("Current:", barbell, gym)
-    gym.change_weight(barbell, target_weight)
-    print("After:", barbell, gym)
-except ValueError as e:
-    print(e)
+def attempt_weight_change(barbell, gym, target_weight):
+    try:
+        print("Current:", barbell, gym)
+        while not gym.change_weight(barbell, target_weight):
+            pass
+        print("After:", barbell, gym)
+    except ValueError as e:
+        print(e)
+
 
 # Example usage
-target_weight = 165
-try:
-    print("Current:", barbell, gym)
-    gym.change_weight(barbell, target_weight)
-    print("After:", barbell, gym)
-except ValueError as e:
-    print(e)
+for target in [135, 165, 185, 225, 215, 135]:
+    attempt_weight_change(barbell, gym, target)
 
-# Example usage
-target_weight = 185
-try:
-    print("Current:", barbell, gym)
-    gym.change_weight(barbell, target_weight)
-    print("After:", barbell, gym)
-except ValueError as e:
-    print(e)
-# Example usage
-target_weight = 225
-try:
-    print("Current:", barbell, gym)
-    while True:
-        if gym.change_weight(barbell, target_weight):
-            break
-    print("After:", barbell, gym)
-except ValueError as e:
-    print(e)
-
-target_weight = 215
-try:
-    print("Current:", barbell, gym)
-    while True:
-        if gym.change_weight(barbell, target_weight):
-            break
-    print("After:", barbell, gym)
-except ValueError as e:
-    print(e)
-
-target_weight = 135
-try:
-    print("Current:", barbell, gym)
-    while True:
-        if gym.change_weight(barbell, target_weight):
-            break
-    print("After:", barbell, gym)
-except ValueError as e:
-    print(e)

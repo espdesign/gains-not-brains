@@ -82,6 +82,7 @@ class Gym_equipment:
                         barbell.add_plate(plate)
                         self.plates.subtract(Counter({plate:2}))
                         self.plates = self.plates + Counter() # remove plates that are at 0
+                        
                     return True
                 else:
                     print("Solution not found")
@@ -108,6 +109,7 @@ class Gym_equipment:
                 self.plates = self.plates + Counter([barbell.cur_plate_order[-1]]*2) # add plate back to gym supply
                 barbell.pop_plate()
                 return False
+
         else:
             raise ValueError('Already at target weight')
 
