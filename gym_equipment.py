@@ -10,7 +10,11 @@ class Barbell:
         self.cur_plate_order = []
 
     def __repr__(self):
-        return f"Barbell:{self.weight + sum(self.cur_plate_order)*2} lbs | {list(reversed(self.cur_plate_order))}------{self.cur_plate_order}"  
+        x = ''
+        for i in self.cur_plate_order:
+            x+=f'[{i}]'
+
+        return f"Barbell:{self.weight + sum(self.cur_plate_order)*2} lbs | ==={x} |"  
       
     def add_plate(self, plate: PlateNumber):
         if plate > 0:
@@ -133,7 +137,7 @@ class Gym_equipment:
 
 def find_plate_combo_symmetric(plates, target): 
     #brute force look through combinations of available plates to add.
-    print('Looking for symmetric_combo')
+    #print('Looking for symmetric_combo')
     i=2
     while True:
         for item in list(combinations(plates,i)):
@@ -142,3 +146,22 @@ def find_plate_combo_symmetric(plates, target):
         i += 1
         if i > 50:
             return list()
+        
+def attempt_weight_change(barbell, gym, target_weight):
+    gym.plan = []
+    try:
+        # print("Current:", barbell, gym,)
+        # print("Target:", target_weight)
+        while not gym.change_weight(barbell, target_weight):
+            #print(gym.last_move)
+            gym.plan.append(gym.last_move)
+            gym.last_move = []
+            pass
+        #print(gym.last_move)
+        gym.plan.append(gym.last_move)
+        # print("After:", barbell, gym)
+        # print('PLAN:', gym.plan)
+        
+        
+    except ValueError as e:
+        print(e)
