@@ -155,16 +155,39 @@ class Gym_equipment:
 
 
 def find_symmetric_plate_combination(plates, target):
-    # brute force look through combinations of available plates to add.
-    # print('Looking for symmetric_combo')
-    i = 2
-    while True:
-        for item in list(combinations(plates, i)):
-            if sum(item) == target:
-                return list(item)
-        i += 1
-        if i > 50:
-            return list()
+    # Create a list of available plates, sorted in descending order.
+    available_plates = []
+    for plate, count in sorted(plates.items(), reverse=True):
+        available_plates.extend([plate] * (count // 2))
+
+    def find_combination_recursive(remaining_target, index, current_combination):
+        if remaining_target == 0:
+            return current_combination
+        if remaining_target < 0 or index >= len(available_plates):
+            return None
+
+        # Try including the current plate.
+        combination_with = find_combination_recursive(
+            remaining_target - available_plates[index],
+            index + 1,
+            current_combination + [available_plates[index]],
+        )
+        if combination_with:
+            return combination_with
+
+        # Try excluding the current plate.
+        combination_without = find_combination_recursive(
+            remaining_target,
+            index + 1,
+            current_combination,
+        )
+        if combination_without:
+            return combination_without
+
+        return None
+
+    result = find_combination_recursive(target, 0, [])
+    return result if result else []
 
 
 def change_barbell_weight(barbell, gym, target_weight):
