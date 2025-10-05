@@ -100,7 +100,19 @@
 
         <div class="info">
             <h3>Gym Plate Supply:</h3>
-            <pre>{{ gym.plates }}</pre>
+            <div class="plates-container">
+                {% for plate_weight, quantity in gym.plates.items() %}
+                    {% for i in range(quantity) %}
+                        <div class="plate plate-{{ plate_weight|string|replace('.', '_') }}">
+                            {% if plate_weight == 2.5 %}
+                                {{ plate_weight }}
+                            {% else %}
+                                {{ plate_weight|int }}
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                {% endfor %}
+            </div>
         </div>
 
         {% if gym.plan %}

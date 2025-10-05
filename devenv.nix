@@ -5,11 +5,11 @@
   ...
 }: {
   # https://devenv.sh/packages/
-  # packages = [
-  #   # Packages for Python development
-  #   config.languages.python.pkgs.flask
-  # ];
-  #
+  packages = [
+    # Packages for Python development
+    pkgs.gemini-cli
+  ];
+
   # https://devenv.sh/languages/
   dotenv.enable = true;
 
