@@ -85,35 +85,42 @@
         <div class="barbell-container">
             <div class="barbell-shaft"></div>
             <div class="barbell-end"></div>
-            <div class="plates-container">
-                {% for plate_weight in barbell.cur_plate_order %}
-                    <div class="plate plate-{{ plate_weight|string|replace('.', '_') }}">
-                        {% if plate_weight == 2.5 %}
-                            {{ plate_weight }}
-                        {% else %}
-                            {{ plate_weight|int }}
-                        {% endif %}
-                    </div>
-                {% endfor %}
-            </div>
-        </div>
-
-        <div class="info">
-            <h3>Gym Plate Supply:</h3>
-            <div class="plates-container">
-                {% for plate_weight, quantity in gym.plates.items() %}
-                    {% for i in range(quantity) %}
-                        <div class="plate plate-{{ plate_weight|string|replace('.', '_') }}">
-                            {% if plate_weight == 2.5 %}
-                                {{ plate_weight }}
-                            {% else %}
-                                {{ plate_weight|int }}
+                    <div class="plates-container">
+                        {% for plate_weight in barbell.cur_plate_order %}
+                            {% if loop.last %}
+                                <a href="{{ url_for('remove_plate', plate_weight=plate_weight) }}">
                             {% endif %}
-                        </div>
-                    {% endfor %}
-                {% endfor %}
-            </div>
-        </div>
+                            <div class="plate plate-{{ plate_weight|string|replace('.', '_') }}">
+                                {% if plate_weight == 2.5 %}
+                                    {{ plate_weight }}
+                                {% else %}
+                                    {{ plate_weight|int }}
+                                {% endif %}
+                            </div>
+                            {% if loop.last %}
+                                </a>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            
+                <div class="info">
+                    <h3>Gym Plate Supply:</h3>
+                    <div class="plates-container">
+                        {% for plate_weight, quantity in gym.plates.items() %}
+                            {% for i in range(quantity) %}
+                                <a href="{{ url_for('add_plate', plate_weight=plate_weight) }}">
+                                    <div class="plate plate-{{ plate_weight|string|replace('.', '_') }}">
+                                        {% if plate_weight == 2.5 %}
+                                            {{ plate_weight }}
+                                        {% else %}
+                                            {{ plate_weight|int }}
+                                        {% endif %}
+                                    </div>
+                                </a>
+                            {% endfor %}
+                        {% endfor %}
+                    </div>        </div>
 
         {% if gym.plan %}
             <div class="info">
