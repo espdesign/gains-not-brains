@@ -1,0 +1,6 @@
+.git
+.gitignore
+devenv.nix
+devenv.lock
+devenv.yaml
+__pycache__
