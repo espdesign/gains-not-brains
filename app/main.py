@@ -2,6 +2,7 @@
 from flask import Flask, render_template, request, redirect, url_for, session
 from gym_equipment import Barbell, Gym_equipment, change_barbell_weight
 import os
+from collections import Counter
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
@@ -12,9 +13,21 @@ def get_current_state():
         for wt, qty in [(45, 4), (35, 2), (25, 2), (15, 2), (10, 2), (5, 2), (2.5, 2)]:
             gym.add_plates(wt, qty)
         barbell = Barbell(45)
-        session['barbell'] = barbell
-        session['gym'] = gym
-    return {'barbell': session['barbell'], 'gym': session['gym']}
+        session['barbell'] = barbell.__dict__
+        session['gym'] = gym.__dict__
+    
+    barbell_data = session['barbell']
+    gym_data = session['gym']
+
+    barbell = Barbell(barbell_data['weight'])
+    barbell.cur_plate_order = barbell_data['cur_plate_order']
+
+    gym = Gym_equipment()
+    gym.plates = Counter({float(k): v for k, v in gym_data['plates'].items()})
+    gym.last_move = gym_data['last_move']
+    gym.plan = gym_data['plan']
+    
+    return {'barbell': barbell, 'gym': gym}
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -25,8 +38,8 @@ def index():
             current_barbell = current_state['barbell']
             current_gym = current_state['gym']
             change_barbell_weight(current_barbell, current_gym, target_weight)
-            session['barbell'] = current_barbell
-            session['gym'] = current_gym
+            session['barbell'] = current_barbell.__dict__
+            session['gym'] = current_gym.__dict__
         except ValueError as e:
             return render_template('index.html', error=str(e), **current_state)
         except Exception as e:
@@ -42,8 +55,8 @@ def add_plate(plate_weight):
     if gym.plates[plate_weight] > 0:
         barbell.add_plate(plate_weight)
         gym.remove_plates(plate_weight, 2)
-        session['barbell'] = barbell
-        session['gym'] = gym
+        session['barbell'] = barbell.__dict__
+        session['gym'] = gym.__dict__
     return redirect(url_for('index'))
 
 @app.route('/remove_plate/<float:plate_weight>')
@@ -54,11 +67,9 @@ def remove_plate(plate_weight):
     if barbell.cur_plate_order and barbell.cur_plate_order[-1] == plate_weight:
         barbell.remove_plate(plate_weight)
         gym.add_plates(plate_weight, 2)
-        session['barbell'] = barbell
-        session['gym'] = gym
+        session['barbell'] = barbell.__dict__
+        session['gym'] = gym.__dict__
     return redirect(url_for('index'))
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')
-
-
