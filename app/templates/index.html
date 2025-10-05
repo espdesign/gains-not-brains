@@ -125,7 +125,7 @@
                     <h3>Gym Plate Supply:</h3>
                     <div class="plates-container">
                         {% for plate_weight, quantity in gym.plates.items() %}
-                            {% for i in range(quantity) %}
+                            {% for i in range(quantity // 2) %}
                                 <a href="{{ url_for('add_plate', plate_weight=plate_weight) }}">
                                     <div class="plate plate-{{ plate_weight|string|replace('.', '_') }}">
                                         {% if plate_weight == 2.5 %}
